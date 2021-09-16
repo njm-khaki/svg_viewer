@@ -1,5 +1,7 @@
 import React from "react"
 
+import { log } from "./../../util/decorator"
+
 import { targets, parents } from "./svgElements"
 import { parseViewBox } from "./svgFunctions"
 import { node2element } from "./convertElements"
@@ -61,6 +63,8 @@ export abstract class Manager {
     /**
      * セットしたSVG確認用
      */
+    @log(`get svg`)
+    // @ts-ignore
     get svg(): string {
         return this._svg
     }
@@ -68,6 +72,8 @@ export abstract class Manager {
     /**
      * セットしたSVGも応じてJSX.Elementを生成する
      */
+    @log(`get component`)
+    // @ts-ignore
     get component(): JSX.Element {
         return this._component
     }
@@ -75,6 +81,8 @@ export abstract class Manager {
     /**
      * SVGの表示領域
      */
+    @log(`get viewBox`)
+    // @ts-ignore
     get viewBox(): number[] {
         return this._viewBox
     }
@@ -83,6 +91,8 @@ export abstract class Manager {
      * SVGタグを解析して円・楕円を抽出する
      * @returns 
      */
+    @log(`analysisSvgFigure`)
+    // @ts-ignore
     private analysisSvgFigure(): void {
         // 表示領域を抽出
         const viewer = document.getElementById(this._id)
@@ -119,6 +129,8 @@ export abstract class Manager {
      * @param param0 
      * @returns 
      */
+    @log(`searchFigures`)
+    // @ts-ignore
     private searchFigures({node}: {node: ChildNode}): void {
         // 子要素でループ
         let child: ChildNode | null = node?.firstChild
@@ -143,6 +155,8 @@ export abstract class Manager {
      * @param param0 
      * @returns 
      */
+    @log(`calcuClickCoordinate`)
+    // @ts-ignore
     private calcuClickCoordinate({
         event,
     }: {
@@ -168,6 +182,8 @@ export abstract class Manager {
      * @param param0 
      * @returns 
      */
+    @log(`convertCoordinate`)
+    // @ts-ignore
     private convertCoordinate({
         x,
         y,
@@ -190,6 +206,8 @@ export abstract class Manager {
      * 内側のときは継承先で実装したメソッドを呼び出す
      * @param param0 
      */
+    @log(`nannkaTekitouniClicksaretaZukeiWpSagasu`)
+    // @ts-ignore
     private nannkaTekitouniClicksaretaZukeiWpSagasu({
         x,
         y,
