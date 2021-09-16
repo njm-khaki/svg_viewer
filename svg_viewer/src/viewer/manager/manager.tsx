@@ -3,7 +3,7 @@ import React from "react"
 import { targets, parents } from "./svgElements"
 import { parseViewBox } from "./svgFunctions"
 import { node2element } from "./convertElements"
-import { isInnerCircle } from "./geometoryCalculator"
+import { isInnerCircle, isInnerEllipse } from "./geometoryCalculator"
 
 export abstract class Manager {
     private readonly _id = `viewer`
@@ -26,16 +26,9 @@ export abstract class Manager {
                 const [x ,y] = this.calcuClickCoordinate({
                     event: event
                 })
-                this._figures.forEach((figure, key, array) => {
-                    if (figure instanceof SVGCircleElement) {
-                        if (isInnerCircle({
-                            circle: figure, 
-                            x: x, 
-                            y: y
-                        })) {
-                            this.onClickedCircle(figure)
-                        }
-                    }
+                this.nannkaTekitouniClicksaretaZukeiWpSagasu({
+                    x: x,
+                    y: y
                 })
             }}
         />
@@ -132,5 +125,29 @@ export abstract class Manager {
             x / width * this._viewBox[2] + this._viewBox[0],
             y / height * this._viewBox[3] + this._viewBox[1]
         ]
+    }
+
+    private nannkaTekitouniClicksaretaZukeiWpSagasu({
+        x,
+        y,
+    }: {
+        x: number,
+        y: number
+    }): void {
+        this._figures.forEach((figure, key, array) => {
+            const isClicked: boolean = figure instanceof SVGCircleElement ? isInnerCircle({
+                circle: figure, 
+                x: x, 
+                y: y
+            }) : figure instanceof SVGEllipseElement ? isInnerEllipse({
+                ellipse: figure,
+                x: x,
+                y: y
+            }) : false
+            
+            if (isClicked) {
+                this.onClickedCircle(figure)
+            }
+        })
     }
 }

@@ -5,7 +5,7 @@ export class ViewerManager extends Manager {
 
     onClickedCircle(figure: SVGCircleElement | SVGEllipseElement): void {
         figure.setAttribute(this._fill, this.changeColor())
-        console.log(`on click!!`)
+        console.log(`on click!!: ${figure}`)
     }
 
     private changeColor(): string {
