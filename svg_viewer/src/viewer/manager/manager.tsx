@@ -5,16 +5,33 @@ import { parseViewBox } from "./svgFunctions"
 import { node2element } from "./convertElements"
 import { isInnerCircle, isInnerEllipse } from "./geometoryCalculator"
 
+/**
+ * SVGビューワーの抽象クラス
+ */
 export abstract class Manager {
+    // ビューワーのid
     private readonly _id = `viewer`
+    // svgタグにもidを振ると楽になる
     private readonly _viewer = `svg`
+    // 表示するSVGの内容
     protected _svg: string = ``
+    // 表示するSVGに合わせてJSX.Elementを生成する
     protected _component: JSX.Element = <div />
+    // SVGタグから抽出した円・楕円情報
     private _figures: Array<SVGCircleElement | SVGEllipseElement> = []
+    // SVGの表示領域
     protected _viewBox: number[] = [0, 0, 0, 0]
 
+    /**
+     * 図形がクリックされたときの動作
+     * 継承先で実装する
+     * @param figure 
+     */
     abstract onClickedCircle(figure: SVGCircleElement | SVGEllipseElement): void
 
+    /**
+     * 表示するSVGをセットする
+     */
     set svg(svg: string) {
         this._svg = svg
         this._component = <div
@@ -41,56 +58,91 @@ export abstract class Manager {
         )
     }
 
+    /**
+     * セットしたSVG確認用
+     */
     get svg(): string {
         return this._svg
     }
 
+    /**
+     * セットしたSVGも応じてJSX.Elementを生成する
+     */
     get component(): JSX.Element {
         return this._component
     }
 
+    /**
+     * SVGの表示領域
+     */
     get viewBox(): number[] {
         return this._viewBox
     }
 
+    /**
+     * SVGタグを解析して円・楕円を抽出する
+     * @returns 
+     */
     private analysisSvgFigure(): void {
+        // 表示領域を抽出
         const viewer = document.getElementById(this._id)
         if (!viewer) {
             return
         }
 
+        // 円・楕円情報を初期化
         this._figures = []
+        // 子要素を取得
         let child: ChildNode | null = viewer.firstChild
+        // 子要素でループさせる
         while(child) {
-            child = child.nextSibling
             if (child) {
                 if (child.nodeName === `svg`) {
+                    /// SVG要素にidを振っておく
                     const svg = child as SVGElement
                     svg.setAttribute(`id`, this._viewer)
+                    // 表示領域を抽出する
                     this._viewBox = parseViewBox({svg: svg})
                 }
+                // 円・楕円を探索する
                 this.searchFigures({node: child})
             }
+            child = child.nextSibling
         }
+        // 探索結果を確認
         console.log(this._figures)
         // this.searchFigures({node: svg})
     }
 
+    /**
+     *  SVGから円・楕円を抽出する
+     * @param param0 
+     * @returns 
+     */
     private searchFigures({node}: {node: ChildNode}): void {
+        // 子要素でループ
         let child: ChildNode | null = node?.firstChild
         while (child) {
             if (parents.includes(child.nodeName)) {
+                // SVGとGタグではさらに子要素を探索する
                 this.searchFigures({node: child})
                 return
             }
             if (targets.includes(child.nodeName)) {
-                
+                // 探索対象の図形であれば
+                // nodeから図形情報に変換する
                 this._figures.push(node2element({node: child}))
             }
             child = child.nextSibling
         }
     }
 
+    /**
+     * ブラウザ上でクリックした座標を
+     * SVG上の座標に変換する
+     * @param param0 
+     * @returns 
+     */
     private calcuClickCoordinate({
         event,
     }: {
@@ -110,6 +162,12 @@ export abstract class Manager {
         })
     }
 
+    /**
+     * ブラウザ上の座標空間から
+     * SVG上の座標空間へ変換する
+     * @param param0 
+     * @returns 
+     */
     private convertCoordinate({
         x,
         y,
@@ -127,6 +185,11 @@ export abstract class Manager {
         ]
     }
 
+    /**
+     * 抽出した円・楕円の内側をクリックしたか判定する
+     * 内側のときは継承先で実装したメソッドを呼び出す
+     * @param param0 
+     */
     private nannkaTekitouniClicksaretaZukeiWpSagasu({
         x,
         y,

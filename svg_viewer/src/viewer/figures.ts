@@ -1,3 +1,6 @@
+/**
+ * SVGで表示する内容
+ */
 export const circles: string = `
 <svg 
     width="50vw"

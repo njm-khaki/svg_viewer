@@ -1,5 +1,10 @@
 const viewBox: string = `viewBox`
 
+/**
+ * SVGの表示領域を抽出する
+ * @param param0 
+ * @returns 
+ */
 export const parseViewBox = ({ svg }: { svg: SVGElement }): number[] => {
     try {
         const box= svg.getAttribute(viewBox) as string
