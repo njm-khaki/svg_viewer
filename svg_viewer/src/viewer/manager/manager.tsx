@@ -92,6 +92,8 @@ export abstract class Manager {
     /**
      * SVGビューワーの表示サイズを返す
      */
+    @log(`get size`)
+    // @ts-ignore
     get size(): Size {
         const viewer = document.getElementById(this._viewer)
         return new Size({

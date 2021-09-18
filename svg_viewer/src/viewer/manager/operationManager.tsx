@@ -12,17 +12,19 @@ export abstract class OperationManager extends Manager {
      * 継承先で実装する
      * @param figure 
      */
-    protected abstract onClickedCircle(figure: SVGCircleElement | SVGEllipseElement): void
+    protected abstract onClickedFigure(figure: SVGCircleElement | SVGEllipseElement): void
 
     /**
      * クリック時の処理を実装する
      * @param event 
      */
+    @log(`on click`)
+    // @ts-ignore
     onClick(event: React.MouseEvent): void {
         const clickPosition: Offset = this.calcuClickCoordinate({
             event: event
         })
-        this.nannkaTekitouniClicksaretaZukeiWpSagasu({
+        this.searchClickedFigures({
             position: new Offset({
                 x: clickPosition.x,
                 y: clickPosition.y
@@ -58,9 +60,9 @@ export abstract class OperationManager extends Manager {
      * 内側のときは継承先で実装したメソッドを呼び出す
      * @param param0 
      */
-    @log(`nannkaTekitouniClicksaretaZukeiWpSagasu`)
+    @log(`searchClickedFigures`)
     // @ts-ignore
-    private nannkaTekitouniClicksaretaZukeiWpSagasu({
+    private searchClickedFigures({
         position,
     }: {
         position: Offset,
@@ -75,7 +77,7 @@ export abstract class OperationManager extends Manager {
             }) : false
 
             if (isClicked) {
-                this.onClickedCircle(figure)
+                this.onClickedFigure(figure)
             }
         })
     }
