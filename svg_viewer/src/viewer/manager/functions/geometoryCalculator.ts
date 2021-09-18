@@ -1,3 +1,6 @@
+import { Offset } from "../models/offset"
+import { Size } from "../models/size"
+
 /**
  * 平方根を求める
  * 省略形
@@ -29,9 +32,9 @@ export const norm = ({
     point,
     origin
 }: {
-    point: number[],
-    origin: number[],
-}): number => sqrt(square(point[0] - origin[0]) + square(point[1] - origin[1]))
+    point: Offset,
+    origin: Offset,
+}): number => sqrt(square(point.x - origin.x) + square(point.y - origin.y))
 
 /**
  * 図形情報から中心座標を抜き出す
@@ -42,10 +45,10 @@ export const extractCenter = ({
     sphere,
 }: {
     sphere: SVGCircleElement | SVGEllipseElement
-}): number[] => [
-    Number(sphere.getAttribute(x)),
-    Number(sphere.getAttribute(y))
-]
+}): Offset => new Offset({
+    x: Number(sphere.getAttribute(x)),
+    y:Number(sphere.getAttribute(y))
+})
 
 /**
  * 指定した座標が特定の円の内側か判定する
@@ -54,16 +57,14 @@ export const extractCenter = ({
  */
 export const isInnerCircle = ({
     circle,
-    x,
-    y,
+    position
 }: {
     circle: SVGCircleElement,
-    x: number,
-    y: number
+    position: Offset
 }): boolean => {
     const r: number = Number(circle.getAttribute(radius))
     return norm({
-        point: [x, y],
+        point: position,
         origin: extractCenter({sphere: circle})
     }) <= r
 }
@@ -77,10 +78,10 @@ export const extractAxis = ({
     ellipse,
 }: {
     ellipse: SVGEllipseElement
-}): number[] => [
-    Number(ellipse.getAttribute(a)),
-    Number(ellipse.getAttribute(b))
-]
+}): Size => new Size({
+    width: Number(ellipse.getAttribute(a)),
+    height: Number(ellipse.getAttribute(b)),
+})
 
 /**
  * 楕円の焦点座標を求める
@@ -88,25 +89,33 @@ export const extractAxis = ({
  * @returns 
  */
 export const calcuFocus = ({
-    x,
-    y,
-    a,
-    b,
+    origin,
+    axis,
 }: {
-    x: number,
-    y: number,
-    a: number,
-    b: number
-}): number[][] => {
+    origin: Offset
+    axis: Size,
+}): Offset[] => {
     const focus = (a: number, b: number): number => sqrt(square(a) - square(b))
-    const landscape:boolean = a > b
-    const c = landscape ? focus(a, b) : focus(b, a)
+    const landscape: boolean = axis.width > axis.height
+    const c = landscape ? focus(axis.width, axis.height) : focus(axis.height, axis.width)
     return landscape ? [
-        [x + c, y],
-        [x - c, y]
+        new Offset({
+            x: origin.x + c, 
+            y: origin.y
+        }),
+        new Offset({
+            x: origin.x - c,
+            y: origin.y
+        })
     ] : [
-        [x, y + c],
-        [x, y - c]
+        new Offset({
+            x: origin.x,
+            y: origin.y + c
+        }),
+        new Offset({
+            x: origin.x,
+            y: origin.y - c
+        })
     ]
 }
 
@@ -117,24 +126,23 @@ export const calcuFocus = ({
  */
 export const isInnerEllipse = ({
     ellipse,
-    x,
-    y
+    position,
 }: {
     ellipse: SVGEllipseElement,
-    x: number,
-    y: number,
+    position: Offset,
 }): boolean => {
-    const [a, b]: number[] = extractAxis({ellipse: ellipse})
-    const axis: number = a > b ? 2 * a : 2 * b;
-    const [_x, _y]: number[] = extractCenter({sphere: ellipse})
-    const [focus, nega]: number[][] = calcuFocus({
-        x: _x,
-        y: _y,
-        a: a,
-        b: b
+    const axis: Size = extractAxis({ellipse: ellipse})
+    const length: number = axis.width > axis.height ? 2 * axis.width : 2 * axis.height;
+    const center: Offset = extractCenter({sphere: ellipse})
+    const [focus, nega]: Offset[] = calcuFocus({
+        origin: center,
+        axis: axis
     })
-    const dis = (focus: number[]) => norm({point: [x, y], origin: focus})
+    const dis = (focus: Offset) => norm({
+        point: position, 
+        origin: focus,
+    })
 
-    return axis >= dis(focus) + dis(nega)
+    return length >= dis(focus) + dis(nega)
 }
 

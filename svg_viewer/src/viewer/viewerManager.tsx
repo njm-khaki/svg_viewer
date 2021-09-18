@@ -1,9 +1,9 @@
-import { Manager } from "./manager/manager";
+import { OperationManager } from "./manager/operationManager"
 
 /**
  * SVGビューワー実装クラス
  */
-export class ViewerManager extends Manager {
+export class ViewerManager extends OperationManager {
     private readonly _fill = `fill`
 
     /**
