@@ -2,10 +2,12 @@ import React from "react"
 
 import { log } from "./../../util/decorator"
 
-import { targets, parents } from "./svgElements"
-import { parseViewBox } from "./svgFunctions"
-import { node2element } from "./convertElements"
-import { isInnerCircle, isInnerEllipse } from "./geometoryCalculator"
+import { targets, parents } from "./defines/svgElements"
+import { parseViewBox } from "./functions/svgFunctions"
+import { node2element } from "./functions/convertElements"
+import { Offset } from "./models/offset"
+import { Size } from "./models/size"
+import { ViewBox } from "./models/viewBox"
 
 /**
  * SVGビューワーの抽象クラス
@@ -16,20 +18,28 @@ export abstract class Manager {
     // svgタグにもidを振ると楽になる
     private readonly _viewer = `svg`
     // 表示するSVGの内容
-    protected _svg: string = ``
+    private _svg: string = ``
     // 表示するSVGに合わせてJSX.Elementを生成する
-    protected _component: JSX.Element = <div />
+    private _component: JSX.Element = <div />
     // SVGタグから抽出した円・楕円情報
     private _figures: Array<SVGCircleElement | SVGEllipseElement> = []
     // SVGの表示領域
-    protected _viewBox: number[] = [0, 0, 0, 0]
+    private _viewBox: ViewBox = new ViewBox({
+        offset: new Offset({
+            x: 0,
+            y: 0,
+        }),
+        size: new Size({
+            width: 0,
+            height: 0.
+        }),
+    })
 
     /**
-     * 図形がクリックされたときの動作
-     * 継承先で実装する
-     * @param figure 
+     * 継承先でクリック時の処理を実装させる
+     * @param event 
      */
-    abstract onClickedCircle(figure: SVGCircleElement | SVGEllipseElement): void
+    protected abstract onClick(event: React.MouseEvent): void
 
     /**
      * 表示するSVGをセットする
@@ -41,15 +51,7 @@ export abstract class Manager {
             dangerouslySetInnerHTML={{
                 __html: svg
             }}
-            onClick={(event: React.MouseEvent): void => {
-                const [x ,y] = this.calcuClickCoordinate({
-                    event: event
-                })
-                this.nannkaTekitouniClicksaretaZukeiWpSagasu({
-                    x: x,
-                    y: y
-                })
-            }}
+            onClick={(event: React.MouseEvent) => this.onClick(event)}
         />
         
         // すぐにやるとDOMから取得できないので
@@ -83,8 +85,28 @@ export abstract class Manager {
      */
     @log(`get viewBox`)
     // @ts-ignore
-    get viewBox(): number[] {
+    get viewBox(): ViewBox {
         return this._viewBox
+    }
+
+    /**
+     * SVGビューワーの表示サイズを返す
+     */
+    @log(`get size`)
+    // @ts-ignore
+    get size(): Size {
+        const viewer = document.getElementById(this._viewer)
+        return new Size({
+            width: viewer?.clientWidth as number,
+            height: viewer?.clientHeight as number
+        })
+    }
+
+    /**
+     * 図形情報
+     */
+    protected get figures(): Array<SVGCircleElement | SVGEllipseElement> {
+        return this._figures
     }
 
     /**
@@ -147,88 +169,5 @@ export abstract class Manager {
             }
             child = child.nextSibling
         }
-    }
-
-    /**
-     * ブラウザ上でクリックした座標を
-     * SVG上の座標に変換する
-     * @param param0 
-     * @returns 
-     */
-    @log(`calcuClickCoordinate`)
-    // @ts-ignore
-    private calcuClickCoordinate({
-        event,
-    }: {
-        event: React.MouseEvent,
-    }): number[] {
-        const viewer = document.getElementById(this._viewer)
-        const [width, height] = [
-            viewer?.clientWidth as number,
-            viewer?.clientHeight as number
-        ]
-
-        return this.convertCoordinate({
-            x: event.clientX,
-            y: event.clientY,
-            width: width,
-            height: height
-        })
-    }
-
-    /**
-     * ブラウザ上の座標空間から
-     * SVG上の座標空間へ変換する
-     * @param param0 
-     * @returns 
-     */
-    @log(`convertCoordinate`)
-    // @ts-ignore
-    private convertCoordinate({
-        x,
-        y,
-        width,
-        height,
-    }: {
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-    }): number[] {
-        return [
-            x / width * this._viewBox[2] + this._viewBox[0],
-            y / height * this._viewBox[3] + this._viewBox[1]
-        ]
-    }
-
-    /**
-     * 抽出した円・楕円の内側をクリックしたか判定する
-     * 内側のときは継承先で実装したメソッドを呼び出す
-     * @param param0 
-     */
-    @log(`nannkaTekitouniClicksaretaZukeiWpSagasu`)
-    // @ts-ignore
-    private nannkaTekitouniClicksaretaZukeiWpSagasu({
-        x,
-        y,
-    }: {
-        x: number,
-        y: number
-    }): void {
-        this._figures.forEach((figure, key, array) => {
-            const isClicked: boolean = figure instanceof SVGCircleElement ? isInnerCircle({
-                circle: figure, 
-                x: x, 
-                y: y
-            }) : figure instanceof SVGEllipseElement ? isInnerEllipse({
-                ellipse: figure,
-                x: x,
-                y: y
-            }) : false
-            
-            if (isClicked) {
-                this.onClickedCircle(figure)
-            }
-        })
     }
 }
