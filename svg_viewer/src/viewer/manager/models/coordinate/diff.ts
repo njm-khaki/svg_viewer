@@ -7,7 +7,10 @@ export abstract class Diff<T> {
         this._current = null
     }
 
-    abstract push(value: T): void
+    push(value: T): void {
+        this._previous = this._current
+        this._current = value
+    }
 
     abstract get diff(): T | null
 
